@@ -30,6 +30,7 @@ static int backgroundX;
 static int enemySpawnTimer;
 static int stageResetTimer;
 static int highscore;
+static char *buffer;
 Entity *player;
 
 static void initPlayer(void);
@@ -60,12 +61,29 @@ static void drawDebris(void);
 static void drawExplosions(void);
 static void drawHud(void);
 static void drawFont(void);
-static void createFontTexture(char *message);
+static void createFontTexture(void);
 
-static void createFontTexture(char* message) {
-  SDL_Surface *fSurface = TTF_RenderText_Solid(font, message, white);
-  fontTexture = SDL_CreateTextureFromSurface(app.renderer, fSurface);
-  SDL_FreeSurface(fSurface);
+
+
+
+/// Creates a SDL_Surface* to display the score and highscore.
+/// 
+/// Function uses stage.score and the global highscore.
+///   
+/// No return or input
+static void createFontTexture(void) {
+  buffer = malloc(sizeof(char) * 100);
+  memset(buffer, '\0', sizeof(buffer));
+  if (buffer) {
+    sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
+    SDL_Surface *fSurface = TTF_RenderText_Blended(font, buffer, white);
+    free(buffer);
+    fontTexture = SDL_CreateTextureFromSurface(app.renderer, fSurface);
+    SDL_FreeSurface(fSurface);
+  } else {
+    printf("Error allocating string buffer!\n");
+  }
+
 }
 
 
@@ -203,6 +221,7 @@ static int bulletHitFighter(Entity *b) {
         playSound(SND_ALIEN_DIE, CH_ANY);
         stage.score++;
         highscore = max(stage.score, highscore);
+        createFontTexture();
       }
       addDebris(e);
       addExplosions(e->x, e->y, 16);
@@ -502,7 +521,6 @@ void initStage(void) {
   explosionTexture = loadTexture(".\\assets\\explosion00.png");
   font = loadFont(".\\assets\\arial.ttf");
 
-  createFontTexture("fuck you!");
 
   resetStage();
 }
@@ -586,6 +604,8 @@ static void resetStage(void) {
 
   stageResetTimer = FPS * 3;
   stage.score = 0;
+  createFontTexture();
+  drawFont();
 }
 
 
