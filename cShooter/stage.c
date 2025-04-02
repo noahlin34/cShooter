@@ -12,6 +12,7 @@
 #include "text.h"
 #include "util.h"
 #include "background.h"
+#include "effects.h"
 
 
 extern App app;
@@ -24,6 +25,10 @@ static SDL_Texture *playerTexture;
 static SDL_Texture *background;
 static SDL_Texture *explosionTexture;
 static SDL_Texture *arialTexture;
+static DebrisList debrisList;
+static ExplosionList explosionList;
+
+
 static char *buffer[100];
 static TTF_Font *arialFont;
 static int backgroundX;
@@ -32,6 +37,7 @@ static int enemySpawnTimer;
 static int stageResetTimer;
 int highscore;
 Entity *player;
+
 
 static void initPlayer(void);
 static void logic(void);
@@ -48,15 +54,6 @@ static void resetStage(void);
 static void clipPlayer(void);
 static void doEnemies(void);
 static void fireAlienBullet(Entity *e);
-static void doExplosions(void);
-static void doDebris(void);
-static void addExplosions(int, int, int);
-static void addDebris(Entity *);
-static void drawDebris(void);
-static void drawExplosions(void);
-
-
-
 
 
 static void fireBullet(void) {
@@ -193,9 +190,8 @@ static int bulletHitFighter(Entity *b) {
         sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
         arialTexture = createFontTexture(arialFont, app.renderer, buffer);
       }
-      addDebris(e);
-      addExplosions(e->x, e->y, 16);
-
+      addDebris(&debrisList, e);
+      addExplosions(&explosionList, e->x, e->y, 16);
       return 1;
     }
   }
@@ -212,105 +208,17 @@ static void drawBullets(void) {
 
 
 
-static void drawDebris(void) {
-  Debris *d;
-  for (d = stage.debrisHead.next; d != NULL; d = d->next) {
-    blitRect(d->texture, &d->rect, d->x, d->y);
-  }
-}
-
-static void drawExplosions(void) {
-  Explosion *e;
-  SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_ADD);
-  SDL_SetTextureBlendMode(explosionTexture, SDL_BLENDMODE_ADD);
-
-  for (e = stage.explosionHead.next; e != NULL; e = e->next) {
-    SDL_SetTextureColorMod(explosionTexture, e->r, e->g, e->b);
-    SDL_SetTextureAlphaMod(explosionTexture, e->a);
-    blit(explosionTexture, e->x, e->y);
-  }
-}
-
 static void draw(void) {
   drawBackground(app.renderer, background, backgroundX);
   drawStarfield(app.renderer);
-  drawDebris();
-  drawExplosions();
+  drawDebris(app.renderer, &debrisList);
+  drawExplosions(app.renderer, explosionTexture, &explosionList);
   drawFighters();
   drawBullets();
   drawFont(arialTexture, 20, 20);
 }
 
 
-static void addExplosions(int x, int y, int num) {
-  Explosion *e;
-
-  for (int i = 0; i < num; i++) {
-    e = malloc(sizeof(Explosion));
-    memset(e, 0, sizeof(Explosion));
-
-    stage.explosionTail->next = e;
-    stage.explosionTail = e;
-
-    e->x = x + (rand() % 32) - (rand() % 32);
-    e->y = y + (rand() % 32) - (rand() % 32);
-    e->dx = (rand() % 10) - (rand() % 10);
-    e->dy = (rand() % 10) - (rand() % 10);
-
-    e->dx /= 10;
-    e->dy /= 10;
-
-    switch (rand() % 4) {
-      case 0:
-        e->r = 255;
-        break;
-      case 1:
-        e->r = 255;
-        e->g = 128;
-        break;
-      case 2:
-        e->r = 255;
-        e->g = 255;
-        break;
-      default:
-        e->r = 255;
-        e->g = 255;
-        e->b = 255;
-        break;
-    }
-    e->a = rand() % FPS * 3;
-  }
-}
-
-static void addDebris(Entity *e) {
-  Debris *d;
-  int x;
-  int y;
-  int w;
-  int h;
-
-  w = e->w / 2;
-  h = e->h / 2;
-
-  for (y = 0; y <= h; y += h) {
-    for (x = 0; x <= w; x += w) {
-      d = malloc(sizeof(Debris));
-      memset(d, 0, sizeof(Debris));
-      stage.debrisTail->next = d;
-      stage.debrisTail = d;
-      d->x = e->x + e->w / 2;
-      d->y = e->y + e->h / 2;
-      d->dx = (rand() % 5) - (rand() % 5);
-      d->dy = -(5 + (rand() % 12));
-      d->life = FPS * 2;
-      d->texture = e->texture;
-      d->rect.x = x;
-      d->rect.y = y;
-      d->rect.w = w;
-      d->rect.h = h;
-    }
-  }
-}
 
 static void logic(void) {
   backgroundX = doBackground(backgroundX);
@@ -326,56 +234,14 @@ static void logic(void) {
     resetStage();
   }
 
-  doExplosions();
-  doDebris();
+  doExplosions(&explosionList);
+  doDebris(&debrisList);
 }
 
 
 
 
-static void doExplosions(void) {
-  Explosion *e;
-  Explosion *prev = &stage.explosionHead;
 
-  for (e = stage.explosionHead.next; e != NULL; e = e->next) {
-    e->x += e->dx;
-    e->y += e->dy;
-
-    if (--e->a <= 0) {
-      if (e == stage.explosionTail) {
-        stage.explosionTail = prev;
-      }
-
-      prev->next = e->next;
-      free(e);
-      e = prev;
-    }
-    prev = e;
-  }
-}
-
-static void doDebris(void) {
-  Debris *d;
-  Debris *prev;
-  prev = &stage.debrisHead;
-
-  for (d = stage.debrisHead.next; d != NULL; d = d->next) {
-    d->x += d->dx;
-    d->y += d->dy;
-
-    d->dy += 0.5;
-
-    if (--d->life <= 0) {
-      if (d == stage.debrisTail) {
-        stage.debrisTail = prev;
-      }
-      prev->next = d->next;
-      free(d);
-      d = prev;
-    }
-    prev = d;
-  }
-}
 
 static void clipPlayer(void) {
   if (player != NULL) {
@@ -442,8 +308,8 @@ static void initPlayer(void) {
 void initStage(void) {
   app.delegate.logic = logic;
   app.delegate.draw = draw;
-  stage.explosionTail = &stage.explosionHead;
-  stage.debrisTail = &stage.debrisHead;
+  explosionList.explosionTail = &(explosionList.explosionHead);
+  debrisList.debrisTail = &(debrisList.debrisTail);
   bulletTexture = loadTexture(".\\assets\\laserBlue12.png");
   enemyTexture = loadTexture(".\\assets\\enemyBlack1.png");
   alienBulletTexture = loadTexture(".\\assets\\laserRed12.png");
@@ -488,7 +354,7 @@ static void fireAlienBullet(Entity *e) {
 
 static void resetStage(void) {
   Entity *e;
-  Explosion *ex;
+ // Explosion *ex;
   Debris *d;
 
   while (stage.fighterHead.next) {
@@ -503,24 +369,21 @@ static void resetStage(void) {
     free(e);
   }
 
-  while (stage.explosionHead.next) {
-    ex = stage.explosionHead.next;
-    stage.explosionHead.next = ex->next;
-    free(ex);
-  }
+//  while (stage.explosionHead.next) {
+//    ex = stage.explosionHead.next;
+//    stage.explosionHead.next = ex->next;
+ //   free(ex);
+ // }
 
-  while (stage.debrisHead.next) {
-    d = stage.debrisHead.next;
-    stage.debrisHead.next = d->next;
-    free(d);
-  }
+  resetDebris(&debrisList);
+  resetExplosions(&explosionList);
 
   memset(&stage, 0, sizeof(Stage));
 
   stage.fighterTail = &stage.fighterHead;
   stage.bulletTail = &stage.bulletHead;
-  stage.explosionTail = &stage.explosionHead;
-  stage.debrisTail = &stage.debrisHead;
+  //stage.explosionTail = &stage.explosionHead;
+//  stage.debrisTail = &stage.debrisHead;
 
   initPlayer();
   initStarfield();

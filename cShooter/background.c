@@ -45,7 +45,7 @@ void drawStarfield(SDL_Renderer *renderer) {
   int c;
   for (int i = 0; i < MAX_STARS; i++) {
     c = 32 * stars[i].speed;
-    SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+    SDL_SetRenderDrawColor(renderer, c, c, c, 255); //Set the color based on the speed
     SDL_RenderDrawLine(renderer, stars[i].x, stars[i].y, stars[i].x + 3,
                        stars[i].y);
   }

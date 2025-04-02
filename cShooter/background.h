@@ -16,8 +16,14 @@ typedef struct {
   int speed;
 } Star;
 
+// This function randomly initializes the array holding
+// the star data. This needs to be called at least once prior to
+// calling doStarfield().
+// It can be called as many times as necessary.
 void initStarfield(void);
 
+// This decrements every star's x position by its speed.
 void doStarfield(void);
 
+// This draws a line on the screen for every star in the array.
 void drawStarfield(SDL_Renderer *renderer);

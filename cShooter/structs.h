@@ -37,38 +37,14 @@ typedef struct Entity {
 }Entity;
 
 
-typedef struct Explosion {
-    float x;
-    float y;
-    float dx;
-    float dy;
-    int r;
-    int g;
-    int b;
-    int a;
-    struct Explosion *next;
-} Explosion;
-
-typedef struct Debris {
-    float x;
-    float y;
-    float dx;
-    float dy;
-    SDL_Rect rect;
-    SDL_Texture *texture;
-    int life;
-    struct Debris *next;
-} Debris;
 
 typedef struct {
     Entity fighterHead;
     Entity *fighterTail;
     Entity bulletHead;
     Entity *bulletTail;
-    Explosion explosionHead;
-    Explosion *explosionTail;
-    Debris debrisHead;
-    Debris *debrisTail;
     int score;
 } Stage;
+
+
 
