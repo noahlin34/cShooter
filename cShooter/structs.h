@@ -72,8 +72,3 @@ typedef struct {
     int score;
 } Stage;
 
-typedef struct {
-    int x;
-    int y;
-    int speed;
-} Star;

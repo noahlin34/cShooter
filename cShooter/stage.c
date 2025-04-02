@@ -11,6 +11,8 @@
 #include "structs.h"
 #include "text.h"
 #include "util.h"
+#include "background.h"
+
 
 extern App app;
 extern Stage stage;
@@ -24,7 +26,6 @@ static SDL_Texture *explosionTexture;
 static SDL_Texture *arialTexture;
 static char *buffer[100];
 static TTF_Font *arialFont;
-static Star stars[MAX_STARS];
 static int backgroundX;
 
 static int enemySpawnTimer;
@@ -47,15 +48,10 @@ static void resetStage(void);
 static void clipPlayer(void);
 static void doEnemies(void);
 static void fireAlienBullet(Entity *e);
-static void initStarfield(void);
-static void doBackground(void);
-static void doStarfield(void);
 static void doExplosions(void);
 static void doDebris(void);
 static void addExplosions(int, int, int);
 static void addDebris(Entity *);
-static void drawBackground(void);
-static void drawStarfield(void);
 static void drawDebris(void);
 static void drawExplosions(void);
 
@@ -213,27 +209,8 @@ static void drawBullets(void) {
   }
 }
 
-static void drawBackground(void) {
-  SDL_Rect dest;
-  for (int x = backgroundX; x < SCREEN_WIDTH; x += SCREEN_WIDTH) {
-    dest.x = x;
-    dest.y = 0;
-    dest.w = SCREEN_WIDTH;
-    dest.h = SCREEN_HEIGHT;
-    SDL_RenderCopy(app.renderer, background, NULL, &dest);
-  }
-}
 
-static void drawStarfield(void) {
-  int c;
 
-  for (int i = 0; i < MAX_STARS; i++) {
-    c = 32 * stars[i].speed;
-    SDL_SetRenderDrawColor(app.renderer, c, c, c, 255);
-    SDL_RenderDrawLine(app.renderer, stars[i].x, stars[i].y, stars[i].x + 3,
-                       stars[i].y);
-  }
-}
 
 static void drawDebris(void) {
   Debris *d;
@@ -255,8 +232,8 @@ static void drawExplosions(void) {
 }
 
 static void draw(void) {
-  drawBackground();
-  drawStarfield();
+  drawBackground(app.renderer, background, backgroundX);
+  drawStarfield(app.renderer);
   drawDebris();
   drawExplosions();
   drawFighters();
@@ -336,7 +313,7 @@ static void addDebris(Entity *e) {
 }
 
 static void logic(void) {
-  doBackground();
+  backgroundX = doBackground(backgroundX);
   doStarfield();
   doPlayer();
   doFighters();
@@ -353,21 +330,8 @@ static void logic(void) {
   doDebris();
 }
 
-static void doBackground(void) {
-  if (--backgroundX < -SCREEN_WIDTH) {
-    backgroundX = 0;
-  }
-}
 
-static void doStarfield(void) {
-  for (int i = 0; i < MAX_STARS; i++) {
-    stars[i].x -= stars[i].speed;
 
-    if (stars[i].x < 0) {
-      stars[i].x = SCREEN_WIDTH + stars[i].x;
-    }
-  }
-}
 
 static void doExplosions(void) {
   Explosion *e;
@@ -493,13 +457,7 @@ void initStage(void) {
   resetStage();
 }
 
-static void initStarfield(void) {
-  for (int i = 0; i < MAX_STARS; i++) {
-    stars[i].x = rand() % SCREEN_WIDTH;
-    stars[i].y = rand() % SCREEN_HEIGHT;
-    stars[i].speed = 1 + rand() % 8;
-  }
-}
+
 
 static void fireAlienBullet(Entity *e) {
   Entity *bullet;
