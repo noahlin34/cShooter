@@ -7,10 +7,10 @@
 #include "common.h"
 #include "defs.h"
 #include "draw.h"
-#include "structs.h"
-#include "util.h"
 #include "sound.h"
+#include "structs.h"
 #include "text.h"
+#include "util.h"
 
 extern App app;
 extern Stage stage;
@@ -21,16 +21,15 @@ static SDL_Texture *alienBulletTexture;
 static SDL_Texture *playerTexture;
 static SDL_Texture *background;
 static SDL_Texture *explosionTexture;
-static SDL_Texture *fontTexture;
-static SDL_Color white = {0xFF, 0xFF, 0xFF, 255};
-static TTF_Font *font;
+static SDL_Texture *arialTexture;
+static char *buffer[100];
+static TTF_Font *arialFont;
 static Star stars[MAX_STARS];
 static int backgroundX;
 
 static int enemySpawnTimer;
 static int stageResetTimer;
-static int highscore;
-static char *buffer;
+int highscore;
 Entity *player;
 
 static void initPlayer(void);
@@ -59,32 +58,9 @@ static void drawBackground(void);
 static void drawStarfield(void);
 static void drawDebris(void);
 static void drawExplosions(void);
-static void drawHud(void);
-static void drawFont(void);
-static void createFontTexture(void);
 
 
 
-
-/// Creates a SDL_Surface* to display the score and highscore.
-/// 
-/// Function uses stage.score and the global highscore.
-///   
-/// No return or input
-static void createFontTexture(void) {
-  buffer = malloc(sizeof(char) * 100);
-  memset(buffer, '\0', sizeof(buffer));
-  if (buffer) {
-    sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
-    SDL_Surface *fSurface = TTF_RenderText_Blended(font, buffer, white);
-    free(buffer);
-    fontTexture = SDL_CreateTextureFromSurface(app.renderer, fSurface);
-    SDL_FreeSurface(fSurface);
-  } else {
-    printf("Error allocating string buffer!\n");
-  }
-
-}
 
 
 static void fireBullet(void) {
@@ -107,7 +83,6 @@ static void fireBullet(void) {
 }
 
 static void doPlayer(void) {
-
   if (player != NULL) {
     player->dx = player->dy = 0;
 
@@ -156,7 +131,6 @@ static void doFighters(void) {
   prev = &stage.fighterHead;
 
   for (e = stage.fighterHead.next; e != NULL; e = e->next) {
-
     e->x += e->dx;
     e->y += e->dy;
 
@@ -193,7 +167,6 @@ static void doBullets(void) {
 
     if (bulletHitFighter(b) || b->x < -b->w || b->y < -b->h ||
         b->x > SCREEN_WIDTH || b->y > SCREEN_HEIGHT) {
-
       if (b == stage.bulletTail) {
         stage.bulletTail = prev;
       }
@@ -221,7 +194,8 @@ static int bulletHitFighter(Entity *b) {
         playSound(SND_ALIEN_DIE, CH_ANY);
         stage.score++;
         highscore = max(stage.score, highscore);
-        createFontTexture();
+        sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
+        arialTexture = createFontTexture(arialFont, app.renderer, buffer);
       }
       addDebris(e);
       addExplosions(e->x, e->y, 16);
@@ -287,13 +261,9 @@ static void draw(void) {
   drawExplosions();
   drawFighters();
   drawBullets();
-  drawFont();
+  drawFont(arialTexture, 20, 20);
 }
 
-static void drawFont(void) {
- 
-  blit(fontTexture, 20, 20);
-}
 
 static void addExplosions(int x, int y, int num) {
   Explosion *e;
@@ -314,22 +284,22 @@ static void addExplosions(int x, int y, int num) {
     e->dy /= 10;
 
     switch (rand() % 4) {
-    case 0:
-      e->r = 255;
-      break;
-    case 1:
-      e->r = 255;
-      e->g = 128;
-      break;
-    case 2:
-      e->r = 255;
-      e->g = 255;
-      break;
-    default:
-      e->r = 255;
-      e->g = 255;
-      e->b = 255;
-      break;
+      case 0:
+        e->r = 255;
+        break;
+      case 1:
+        e->r = 255;
+        e->g = 128;
+        break;
+      case 2:
+        e->r = 255;
+        e->g = 255;
+        break;
+      default:
+        e->r = 255;
+        e->g = 255;
+        e->b = 255;
+        break;
     }
     e->a = rand() % FPS * 3;
   }
@@ -366,7 +336,6 @@ static void addDebris(Entity *e) {
 }
 
 static void logic(void) {
-
   doBackground();
   doStarfield();
   doPlayer();
@@ -391,7 +360,6 @@ static void doBackground(void) {
 }
 
 static void doStarfield(void) {
-
   for (int i = 0; i < MAX_STARS; i++) {
     stars[i].x -= stars[i].speed;
 
@@ -406,7 +374,6 @@ static void doExplosions(void) {
   Explosion *prev = &stage.explosionHead;
 
   for (e = stage.explosionHead.next; e != NULL; e = e->next) {
-
     e->x += e->dx;
     e->y += e->dy;
 
@@ -519,14 +486,14 @@ void initStage(void) {
   playerTexture = loadTexture(".\\assets\\playerShip3_red.png");
   background = loadTexture(".\\assets\\background.png");
   explosionTexture = loadTexture(".\\assets\\explosion00.png");
-  font = loadFont(".\\assets\\arial.ttf");
+  arialFont = loadFont(".\\assets\\arial.ttf");
 
-
+  sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
+  arialTexture = createFontTexture(arialFont, app.renderer, buffer);
   resetStage();
 }
 
 static void initStarfield(void) {
-
   for (int i = 0; i < MAX_STARS; i++) {
     stars[i].x = rand() % SCREEN_WIDTH;
     stars[i].y = rand() % SCREEN_HEIGHT;
@@ -604,8 +571,8 @@ static void resetStage(void) {
 
   stageResetTimer = FPS * 3;
   stage.score = 0;
-  createFontTexture();
-  drawFont();
+  sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
+  arialTexture = createFontTexture(arialFont, app.renderer, buffer);
+
+  drawFont(arialTexture, 20, 20);
 }
-
-
