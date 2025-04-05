@@ -5,7 +5,17 @@
 
 static SDL_Color white = {0xFF, 0xFF, 0xFF, 255};
 
-TTF_Font *loadFont(char *fontPath) {
+extern App app; 
+
+static TTF_Font *loadFont(char *fontPath);
+
+void initFonts(char *fontPath) { 
+  TTF_Init(); 
+  app.font = loadFont(fontPath);
+}
+
+
+static TTF_Font *loadFont(char *fontPath) {
   TTF_Font *font;
   font = TTF_OpenFont(fontPath, 18);
   TTF_SetFontStyle(font, TTF_STYLE_NORMAL);  

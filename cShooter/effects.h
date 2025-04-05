@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 #include "structs.h"
+
+// This is a linked list node for implementation in our 'ExplosionList' struct
 typedef struct Explosion {
   float x;
   float y;
@@ -13,28 +15,30 @@ typedef struct Explosion {
   struct Explosion *next;
 } Explosion;
 
+// See: Explosion
 typedef struct Debris {
   float x;
   float y;
   float dx;
   float dy;
   SDL_Rect rect;
-  SDL_Texture *texture;
-  int life;
+  SDL_Texture *texture; // each debris piece has a unique texture
+  int life; // this tracks how long this piece is drawn
   struct Debris *next;
 } Debris;
 
-// linked list structure for explosions
+// Linked list structure for explosions
 typedef struct {
   Explosion explosionHead;
   Explosion *explosionTail;
 } ExplosionList;
 
-// same as above
+// See: Explosion
 typedef struct {
   Debris debrisHead;
   Debris *debrisTail;
 } DebrisList;
+
 // This initializes the explosion list. 
 // Caller is responsible for ensuring this is invoked before using
 // any other explosion methods.

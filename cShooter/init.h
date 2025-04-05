@@ -9,3 +9,4 @@
 
 void initSDL(void);
 void cleanup(void);
+void initGame(void);

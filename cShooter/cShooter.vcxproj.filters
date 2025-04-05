@@ -42,6 +42,9 @@
     <Image Include="assets\background.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="assets\star_gold.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -80,6 +83,12 @@
     <ClInclude Include="effects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="points.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stage.c">
@@ -112,6 +121,12 @@
     <ClCompile Include="effects.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="points.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textures.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Media Include="assets\player_explosion.wav">
@@ -127,6 +142,9 @@
       <Filter>Resource Files</Filter>
     </Media>
     <Media Include="assets\music.mp3" />
+    <Media Include="assets\star.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\just-sans-9.ttf" />

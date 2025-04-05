@@ -1,9 +1,8 @@
 #pragma once
+#include "common.h"
 
-
-TTF_Font *loadFont(char *fontPath);
-
-// This function returns an SDL Texture of a rendered message in the given font.
+void initFonts(char *fontPath);
+ // This function returns an SDL Texture of a rendered message in the given font.
 // It creates a SDL_Surface, then creates the texture.
 SDL_Texture *createFontTexture(TTF_Font *font, SDL_Renderer *renderer,
                                char *message);

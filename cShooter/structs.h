@@ -10,16 +10,27 @@
 #include "defs.h"
 
 typedef struct {
+  char name[MAX_NAME_LENGTH];
+  SDL_Texture *texture;
+  struct Texture *next;
+} Texture;
+
+
+typedef struct {
     void (*logic)(void);
     void (*draw)(void);
 } Delegate;
 
 
 typedef struct {
+    
     SDL_Renderer *renderer;
     SDL_Window *window;
     Delegate delegate;
     int keyboard[MAX_KEYBOARD_KEYS];
+    Texture textureHead;
+    Texture *textureTail;
+    TTF_Font *font;
 } App;
 
 typedef struct Entity {

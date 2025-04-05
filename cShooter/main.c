@@ -30,6 +30,7 @@ int main (int argc, char *argv[]) {
     memset(&app, 0, sizeof(App));
     
     initSDL();
+    initGame();
     
     atexit(cleanup);
     
@@ -39,8 +40,6 @@ int main (int argc, char *argv[]) {
     
     remainder = 0;
 
-    initSound();
-  //  playMusic(-1);
 
     
 

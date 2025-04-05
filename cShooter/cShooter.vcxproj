@@ -160,6 +160,9 @@
     <Image Include="assets\playerShip3_red.png">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </Image>
+    <Image Include="assets\star_gold.png">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="background.h" />
@@ -169,10 +172,12 @@
     <ClInclude Include="effects.h" />
     <ClInclude Include="init.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="points.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="stage.h" />
     <ClInclude Include="structs.h" />
     <ClInclude Include="text.h" />
+    <ClInclude Include="textures.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -182,9 +187,11 @@
     <ClCompile Include="init.c" />
     <ClCompile Include="input.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="points.c" />
     <ClCompile Include="sound.c" />
     <ClCompile Include="stage.c" />
     <ClCompile Include="text.c" />
+    <ClCompile Include="textures.c" />
     <ClCompile Include="util.c" />
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +208,9 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </Media>
     <Media Include="assets\player_explosion.wav">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </Media>
+    <Media Include="assets\star.wav">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </Media>
   </ItemGroup>

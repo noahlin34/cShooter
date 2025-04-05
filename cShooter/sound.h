@@ -5,5 +5,5 @@
 void initSound(void);
 void loadMusic(char *);
 void playMusic(int);
-void playSound(int, int);
+void playSound(int id, int channel);
 void cleanUpSound(void);

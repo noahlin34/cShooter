@@ -11,7 +11,6 @@ void initSound(void) {
   memset(sounds, 0, sizeof(Mix_Chunk *) * SND_MAX);
   music = NULL;
   loadSounds();
-  loadMusic(".\\assets\\music.mp3");
 }
 
 static void loadSounds(void) {
@@ -19,6 +18,7 @@ static void loadSounds(void) {
   sounds[SND_ALIEN_FIRE] = Mix_LoadWAV(".\\assets\\enemy_laser.wav");
   sounds[SND_PLAYER_DIE] = Mix_LoadWAV(".\\assets\\player_explosion.wav");
   sounds[SND_ALIEN_DIE] = Mix_LoadWAV(".\\assets\\enemy_explosion.wav");
+  sounds[SND_POINT_GET] = Mix_LoadWAV(".\\assets\\star.wav");
 }
 
 void loadMusic(char *filename) {

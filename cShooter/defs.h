@@ -20,12 +20,14 @@
 #define MAX_STARS 500
 #define MAX_SND_CHANNELS 8
 #define MAX_LINE_LENGTH 1024
+#define MAX_NAME_LENGTH 100
 
 enum {
   CH_ANY = -1,
   CH_PLAYER,
   CH_ALIEN_FIRE,
-  CH_ALIEN_DEATH
+  CH_ALIEN_DEATH,
+  CH_POINT
 };
 
 enum {
@@ -33,6 +35,7 @@ enum {
   SND_ALIEN_FIRE,
   SND_PLAYER_DIE,
   SND_ALIEN_DIE,
+  SND_POINT_GET,
   SND_MAX
 };
 

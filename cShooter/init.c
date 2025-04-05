@@ -9,6 +9,8 @@
 #include "structs.h"
 #include "defs.h"
 #include "sound.h"
+#include "background.h"
+#include "text.h"
 
 extern App app;
 
@@ -39,7 +41,6 @@ void initSDL(void) {
         exit(1);
     }
     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
-    TTF_Init();
 
     SDL_ShowCursor(0);
 
@@ -52,6 +53,12 @@ void initSDL(void) {
 
     Mix_AllocateChannels(MAX_SND_CHANNELS);
 
+}
+
+void initGame(void) { 
+  initStarfield();
+  initSound();
+  initFonts(".\\assets\\arial.ttf");
 }
 
 void cleanup(void) {

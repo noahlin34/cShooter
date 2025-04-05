@@ -13,31 +13,35 @@
 #include "util.h"
 #include "background.h"
 #include "effects.h"
+#include "points.h"
+#include "textures.h"
 
 
 extern App app;
 extern Stage stage;
 
+// SDL_Texture pointers reside here so that 
+// they only need to be loaded once in stageInit().
+// All subsequent renders do not require reloading texture.
 static SDL_Texture *bulletTexture;
 static SDL_Texture *enemyTexture;
 static SDL_Texture *alienBulletTexture;
 static SDL_Texture *playerTexture;
 static SDL_Texture *background;
 static SDL_Texture *explosionTexture;
-static SDL_Texture *arialTexture;
+SDL_Texture *arialTexture;
+static SDL_Texture *pointsTexture;
+
 static DebrisList debrisList;
 static ExplosionList explosionList;
+static PointsList pointsList;
 
-
-static char *buffer[100];
-static TTF_Font *arialFont;
+static char buf[100]; // this buffer is used to store the score text
 static int backgroundX;
-
 static int enemySpawnTimer;
 static int stageResetTimer;
 int highscore;
 Entity *player;
-
 
 static void initPlayer(void);
 static void logic(void);
@@ -59,6 +63,10 @@ static void fireAlienBullet(Entity *e);
 static void fireBullet(void) {
   Entity *bullet;
   bullet = malloc(sizeof(Entity));
+  if (!bullet) {
+    printf("Malloc fail\n");
+    exit(1);
+  }
   memset(bullet, 0, sizeof(Entity));
   stage.bulletTail->next = bullet;
   stage.bulletTail = bullet;
@@ -185,11 +193,9 @@ static int bulletHitFighter(Entity *b) {
         playSound(SND_PLAYER_DIE, CH_PLAYER);
       } else {
         playSound(SND_ALIEN_DIE, CH_ANY);
-        stage.score++;
-        highscore = max(stage.score, highscore);
-        sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
-        arialTexture = createFontTexture(arialFont, app.renderer, buffer);
-      }
+        addPointsPod(&pointsList, pointsTexture, e->x + e->w / 2, e->y + e->h / 2);
+       
+      } 
       addDebris(&debrisList, e);
       addExplosions(&explosionList, e->x, e->y, 16);
       return 1;
@@ -215,6 +221,7 @@ static void draw(void) {
   drawExplosions(app.renderer, explosionTexture, &explosionList);
   drawFighters();
   drawBullets();
+  drawPointsPod(&pointsList);
   drawFont(arialTexture, 20, 20);
 }
 
@@ -233,7 +240,7 @@ static void logic(void) {
   if (player == NULL && --stageResetTimer <= 0) {
     resetStage();
   }
-
+  doPointsPods(&pointsList, player, &(stage.score), &highscore, app.font, &arialTexture, app.renderer);
   doExplosions(&explosionList);
   doDebris(&debrisList);
 }
@@ -265,6 +272,10 @@ static void spawnEnemies(void) {
 
   if (--enemySpawnTimer <= 0) {
     enemy = malloc(sizeof(Entity));
+    if (!enemy) {
+      printf("Malloc failiure \n");
+      exit(1);
+    }
     memset(enemy, 0, sizeof(Entity));
     stage.fighterTail->next = enemy;
     stage.fighterTail = enemy;
@@ -290,6 +301,10 @@ static void drawFighters(void) {
 
 static void initPlayer(void) {
   player = malloc(sizeof(Entity));
+  if (!player) {
+    printf("malloc failiure \n");
+    exit(1);
+  }
   memset(player, 0, sizeof(Entity));
 
   stage.fighterTail->next = player;
@@ -309,17 +324,20 @@ void initStage(void) {
   app.delegate.logic = logic;
   app.delegate.draw = draw;
   explosionList.explosionTail = &(explosionList.explosionHead);
-  debrisList.debrisTail = &(debrisList.debrisTail);
+  debrisList.debrisTail = &(debrisList.debrisHead);
+  app.textureHead.next = NULL;
+  app.textureTail = &(app.textureHead);
+
   bulletTexture = loadTexture(".\\assets\\laserBlue12.png");
   enemyTexture = loadTexture(".\\assets\\enemyBlack1.png");
   alienBulletTexture = loadTexture(".\\assets\\laserRed12.png");
   playerTexture = loadTexture(".\\assets\\playerShip3_red.png");
   background = loadTexture(".\\assets\\background.png");
   explosionTexture = loadTexture(".\\assets\\explosion00.png");
-  arialFont = loadFont(".\\assets\\arial.ttf");
+  pointsTexture = loadTexture(".\\assets\\star_gold.png");
 
-  sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
-  arialTexture = createFontTexture(arialFont, app.renderer, buffer);
+  sprintf(&buf[0], "Score: %d, HiScore: %d", stage.score, highscore);
+  arialTexture = createFontTexture(app.font, app.renderer, &buf[0]);
   resetStage();
 }
 
@@ -329,6 +347,10 @@ static void fireAlienBullet(Entity *e) {
   Entity *bullet;
 
   bullet = malloc(sizeof(Entity));
+  if (!bullet) {
+    printf("Malloc failiure \n");
+    exit(1);
+  }
   memset(bullet, 0, sizeof(Entity));
   stage.bulletTail->next = bullet;
   stage.bulletTail = bullet;
@@ -354,8 +376,6 @@ static void fireAlienBullet(Entity *e) {
 
 static void resetStage(void) {
   Entity *e;
- // Explosion *ex;
-  Debris *d;
 
   while (stage.fighterHead.next) {
     e = stage.fighterHead.next;
@@ -369,21 +389,13 @@ static void resetStage(void) {
     free(e);
   }
 
-//  while (stage.explosionHead.next) {
-//    ex = stage.explosionHead.next;
-//    stage.explosionHead.next = ex->next;
- //   free(ex);
- // }
-
   resetDebris(&debrisList);
   resetExplosions(&explosionList);
-
+  resetPointsList(&pointsList);
   memset(&stage, 0, sizeof(Stage));
 
   stage.fighterTail = &stage.fighterHead;
   stage.bulletTail = &stage.bulletHead;
-  //stage.explosionTail = &stage.explosionHead;
-//  stage.debrisTail = &stage.debrisHead;
 
   initPlayer();
   initStarfield();
@@ -392,8 +404,8 @@ static void resetStage(void) {
 
   stageResetTimer = FPS * 3;
   stage.score = 0;
-  sprintf(buffer, "Score: %d, HiScore: %d", stage.score, highscore);
-  arialTexture = createFontTexture(arialFont, app.renderer, buffer);
+  sprintf(&buf[0], "Score: %d, HiScore: %d", stage.score, highscore);
+  arialTexture = createFontTexture(app.font, app.renderer, &buf[0]);
 
   drawFont(arialTexture, 20, 20);
 }

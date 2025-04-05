@@ -22,13 +22,6 @@ void presentScene(void) {
 }
 
 
-SDL_Texture *loadTexture(char *filename) {
-    SDL_Texture *texture;
-
-    texture = IMG_LoadTexture(app.renderer, filename);
-    return texture;
-}
-
 void blit(SDL_Texture *texture, int x, int y) {
     SDL_Rect dest;
     dest.x = x;
